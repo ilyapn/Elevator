@@ -23,10 +23,32 @@ public class Shaft {
     }
 
     void doCalls(int[] floors){
-        Arrays.stream(floors).forEach(n -> this.floors[n].doCall());
+        Arrays.stream(floors).forEach(n -> this.floors[n-1].doCall());
     }
 
+    public boolean hasCall(){
+        return Arrays.stream(floors).anyMatch(Floor::isCall);
+    }
 
+    public int[] getCalls(){
+        return Arrays.stream(floors).filter(Floor::isCall).mapToInt(Floor::getNumber).toArray();
+    }
+
+    public boolean hasCallsAbove(int numberFloor){
+        return Arrays.stream(getCalls()).anyMatch(n -> n > numberFloor);
+    }
+
+    public boolean hasCallsBelow(int numberFloor){
+        return Arrays.stream(getCalls()).anyMatch(n -> n < numberFloor);
+    }
+
+    public boolean hasCallOn(int floorNumber){
+        return floors[floorNumber - 1].isCall();
+    }
+
+    public void cancelCall(int floorNumber){
+        floors[floorNumber - 1].cancelCall();
+    }
 
 
 }
