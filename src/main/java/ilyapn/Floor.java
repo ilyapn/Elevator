@@ -4,8 +4,8 @@ package ilyapn;
  * Created by ilyaP on 23.05.2019.
  */
 public class Floor {
-    int number;
-    boolean call;
+    private int number;
+    private boolean call;
 
     public Floor(int number) {
         this.number = number;
@@ -24,7 +24,7 @@ public class Floor {
         this.call = true;
     }
 
-    public void cancelCall(){
+    public void cancelCall() {
         this.call = false;
     }
 }

@@ -11,7 +11,7 @@ import java.util.Scanner;
  * Created by ilyaP on 24.05.2019.
  */
 @Service
-public class UserConsole{
+public class CommandLine {
     @Autowired
     private Scanner scanner;
     @Value("#{new Integer('${floors}')}")
@@ -19,30 +19,23 @@ public class UserConsole{
     @Autowired
     private Shaft shaft;
 
-    public void start(){
-        while (true){
-            System.out.println("1");
+    public void start() {
+        while (true)
             if (scanner.hasNextLine())
                 handler(scanner.nextLine());
-        }
     }
 
-    private void handler(String command){
-        switch (command){
+    private void handler(String command) {
+        switch (command) {
             case "помощь":
                 System.out.println("команда \"вызвать\" позволит выбрать этаж с которого нужно вызвать лифт." +
                         "Можно указать несколько этажей через пробел");
-/*                System.out.println("команда \"поехать\" позволит выбрать на какой этаж поехать." +
-                        "Можно указать несколько этажей через пробел");*/
                 System.out.println("команда \"состояние\" показываети состояние лифта");
                 break;
-            case "вызвать" :
+            case "вызвать":
                 call();
                 break;
-/*            case "поехать" :
-                go();
-                break;*/
-            case "состояние" :
+            case "состояние":
                 state();
                 break;
             default:
@@ -53,41 +46,41 @@ public class UserConsole{
 
     private void state() {
         System.out.println("состояние:");
-        if (!shaft.elevatorCar.isShouldGoToDown() && !shaft.elevatorCar.isShouldGoToDown())
-            System.out.println("лифт стоит на " + shaft.elevatorCar.getFloorWhereStopped() + " этаже");
-        if (shaft.elevatorCar.isShouldGoToDown())
-            System.out.println("лифт движется с " + shaft.elevatorCar.getFloorWhereStopped()+
-            " на " + (shaft.elevatorCar.getFloorWhereStopped() - 1) + " этаж");
-        if (shaft.elevatorCar.isShouldGoToUp())
-            System.out.println("лифт движется с " + shaft.elevatorCar.getFloorWhereStopped()+
-                    " на " + (shaft.elevatorCar.getFloorWhereStopped() + 1) + " этаж");
+        if (!shaft.getElevatorCar().isToDown() && !shaft.getElevatorCar().isToDown())
+            System.out.println("лифт на " + shaft.getElevatorCar().getCurrentFloor() + " этаже");
+        else {
+            System.out.println("лифт был на этаже " + shaft.getElevatorCar().getCurrentFloor());
+        }
         if (!shaft.hasCall())
             System.out.println("лифт нигде не вызван");
         else {
             System.out.print("лифт вызван на этажах ");
             for (int numberFloor : shaft.getCalls())
                 System.out.print(numberFloor + " ");
+            System.out.println();
         }
     }
 
-/*    private void go() {
-        System.out.println("всего этажей "+ numberOfFloors);
-        System.out.print("этаж(ы): ");
-        while (scanner.hasNextLine());
-        parser(scanner.nextLine());
-    }*/
-
-    private void call(){
-        System.out.println("всего этажей "+ numberOfFloors);
+    private void call() {
+        System.out.println("всего этажей " + numberOfFloors);
         System.out.println("этаж(ы): ");
-        while (!scanner.hasNextLine()){}
-        int[] i = parser(scanner.nextLine());
-        shaft.doCalls(i);
-
+        while (!scanner.hasNextLine()) ;
+        String floors = scanner.nextLine();
+        if (floors.matches("[0-9\\s-]+")) {
+            int[] floorsNumbers = parser(floors);
+            for (int floorNumber : floorsNumbers) {
+                if (floorNumber < 1 || floorNumber > numberOfFloors) {
+                    System.out.println("этажа " + floorNumber + " не существует \nкоманда прервана");
+                    return;
+                }
+            }
+            shaft.doCalls(floorsNumbers);
+        } else
+            System.out.println("не корректный ввод");
 
     }
 
-    public int[] parser(String floors){
+    public int[] parser(String floors) {
         return Arrays.stream(floors.split(" ")).mapToInt(Integer::parseInt).toArray();
     }
 }

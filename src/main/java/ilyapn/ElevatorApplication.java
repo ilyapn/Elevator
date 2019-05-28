@@ -10,19 +10,22 @@ import java.util.Scanner;
 
 @SpringBootApplication
 public class ElevatorApplication implements CommandLineRunner {
-	@Autowired
-	private App app;
+    @Autowired
+    private App app;
 
-	public static void main(String[] args) {
-		SpringApplication.run(ElevatorApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(ElevatorApplication.class, args);
+    }
 
-	@Override
-	public void run(String... strings) throws Exception {
-		app.app();
-	}
-	@Bean
-	public Scanner getScanner(){
-		return new Scanner(System.in);
-	}
+    @Override
+    public void run(String... strings) throws Exception {
+        app.app();
+    }
+
+    @Bean
+    public Scanner getScanner() {
+        return new Scanner(System.in);
+    }
+
+
 }

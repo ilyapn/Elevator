@@ -10,38 +10,30 @@ import org.springframework.stereotype.Component;
 @Component
 public class ElevatorCar {
     @Value("#{new Integer('${speed}')}")
-    int speed;
+    private int speed;
     @Value("#{new Integer('${start}')}")
-    int start;
+    private int start;
     @Value("#{new Integer('${stop}')}")
-    int stop;
+    private int stop;
     private Shaft shaft;
-    private ConsoleCar consoleCar;
-    private boolean shouldGoToUp;//renamed
-    private boolean shouldGoToDown;
-    private boolean carStopped;
-    private int floorWhereStopped;
+    private boolean toUp;
+    private boolean toDown;
+    private volatile int currentFloor = 1;
 
     @Autowired
-    public ElevatorCar(ConsoleCar consoleCar) {
-        floorWhereStopped = 1;
-        this.consoleCar = consoleCar;
+    public ElevatorCar() {}
+
+    public boolean isToUp() {
+        return toUp;
     }
 
-    public boolean isShouldGoToUp() {
-        return shouldGoToUp;
+    public boolean isToDown() {
+        return toDown;
     }
 
-    public boolean isShouldGoToDown() {
-        return shouldGoToDown;
-    }
 
-    public boolean isCarStopped() {
-        return carStopped;
-    }
-
-    public int getFloorWhereStopped() {
-        return floorWhereStopped;
+    public int getCurrentFloor() {
+        return currentFloor;
     }
 
     public void setShaft(Shaft shaft) {
@@ -50,74 +42,73 @@ public class ElevatorCar {
 
     public void riseToFloor() {
         long time = System.currentTimeMillis();
-        while (System.currentTimeMillis() < time + 1000 * speed) ;
-        floorWhereStopped++;
+        while (System.currentTimeMillis() < time + 1000 * speed);
+        currentFloor++;
 
     }
 
     public void downToFloor() {
         long time = System.currentTimeMillis();
-        while (System.currentTimeMillis() < time + 1000 * speed) ;
-        floorWhereStopped--;
+        while (System.currentTimeMillis() < time + 1000 * speed);
+        currentFloor--;
     }
 
     public void stopCar() {
         long time = System.currentTimeMillis();
-        while (System.currentTimeMillis() < time + 1000 * stop) ;
-        shaft.cancelCall(floorWhereStopped);
+        while (System.currentTimeMillis() < time + 1000 * stop);
 
     }
 
     public void startCar() {
         long time = System.currentTimeMillis();
-        while (System.currentTimeMillis() < time + 1000 * start) ;
+        while (System.currentTimeMillis() < time + 1000 * start);
 
     }
 
-    public void start() {
+    public synchronized void start() {
         while (true) {
             if (shaft.hasCall()) {// есть вызов
-                if (!shouldGoToUp && !shouldGoToDown) {// до этого не было движение
-                    if (shaft.hasCallOn(floorWhereStopped))//есть вызов на текущем этаже
-                        shaft.cancelCall(floorWhereStopped);//сбросить вызов
-                    else if (shaft.hasCallsAbove(floorWhereStopped)) {//есть вызов сверху
+                if (!toUp && !toDown) {// до этого не было движение
+                    if (shaft.hasCallOn(currentFloor))//есть вызов на текущем этаже
+                        shaft.cancelCall(currentFloor);//сбросить вызов
+                    else if (shaft.hasCallsAbove(currentFloor)) {//есть вызов сверху
                         startCar();//старт
-                        shouldGoToUp = true;//выставить движение вверх
+                        toUp = true;//выставить движение вверх
                         continue;
-                    } else if (shaft.hasCallsBelow(floorWhereStopped)) {//есть вызов снизу
+                    } else if (shaft.hasCallsBelow(currentFloor)) {//есть вызов снизу
                         startCar();// старт
-                        shouldGoToDown = true;//выставить движение вниз
+                        toDown = true;//выставить движение вниз
                         continue;
                     }
-                } else if (shouldGoToUp) {                      //шел вверх
-                    if(shaft.hasCallsAbove(floorWhereStopped)){//есть вызов сверху
+                } else if (toUp) {                      //шел вверх
+                    if (shaft.hasCallsAbove(currentFloor)) {//есть вызов сверху
                         riseToFloor();                          //этаж++
-                        if(shaft.hasCallOn(floorWhereStopped)){//на текущем этаже есть вызов
+                        if (shaft.hasCallOn(currentFloor)) {//на текущем этаже есть вызов
                             stopCar();                          //остановить кабину
-                            shaft.cancelCall(floorWhereStopped);//сбросить вызов
+                            shaft.cancelCall(currentFloor);//сбросить вызов
                             continue;
                         }
 
-                    }else{                                      // сбросить состояние движения
-                        shouldGoToUp = false;
-                        shouldGoToDown = false;
+                    } else {                                      // сбросить состояние движения
+                        toUp = false;
+                        toDown = false;
                     }
-                }else {                                          //не шел вверх
-                    if (shaft.hasCallsBelow(floorWhereStopped)){ //есть вызовснизу
+                } else {                                          //не шел вверх
+                    if (shaft.hasCallsBelow(currentFloor)) { //есть вызов снизу
                         downToFloor();                           //этаж--
-                        if(shaft.hasCallOn(floorWhereStopped)){  //на текущем этаже есть вызов
+                        if (shaft.hasCallOn(currentFloor)) {  //на текущем этаже есть вызов
                             stopCar();                           //остановить кабину
-                            shaft.cancelCall(floorWhereStopped); //сбросить вызов
+                            shaft.cancelCall(currentFloor); //сбросить вызов
                             continue;
                         }
-                    }else {                                      // сбросить состояние движения
-                        shouldGoToUp = false;
-                        shouldGoToDown = false;
+                    } else {                                      // сбросить состояние движения
+                        toUp = false;
+                        toDown = false;
                     }
                 }
-            }else{
-                shouldGoToUp = false;
-                shouldGoToDown = false;
+            } else {
+                toUp = false;
+                toDown = false;
             }
         }
     }

@@ -1,7 +1,7 @@
 package ilyapn;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -9,19 +9,20 @@ import java.util.concurrent.Executors;
 /**
  * Created by ilyaP on 23.05.2019.
  */
-@Service
+@Component
 public class App {
     @Autowired
-    UserConsole userConsole;
+    private CommandLine commandLine;
     @Autowired
-    ElevatorCar elevatorCar;
+    private ElevatorCar elevatorCar;
 
-    public void app(){
+    @Autowired
+    public void app() {
         ExecutorService userThread = Executors.newSingleThreadExecutor();
         ExecutorService elevatorThread = Executors.newSingleThreadExecutor();
 
         elevatorThread.submit(() -> elevatorCar.start());
-        userThread.submit(() -> userConsole.start());
+        userThread.submit(() -> commandLine.start());
 
     }
 }
