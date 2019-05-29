@@ -46,19 +46,10 @@ public class CommandLine {
 
     private void state() {
         System.out.println("состояние:");
-        if (!shaft.getElevatorCar().isToDown() && !shaft.getElevatorCar().isToDown())
-            System.out.println("лифт на " + shaft.getElevatorCar().getCurrentFloor() + " этаже");
-        else {
-            System.out.println("лифт был на этаже " + shaft.getElevatorCar().getCurrentFloor());
-        }
-        if (!shaft.hasCall())
-            System.out.println("лифт нигде не вызван");
-        else {
-            System.out.print("лифт вызван на этажах ");
-            for (int numberFloor : shaft.getCalls())
-                System.out.print(numberFloor + " ");
-            System.out.println();
-        }
+        System.out.println("лифт находится на этаже " + shaft.getElevatorCar().getCurrentFloor());
+        System.out.println("время потраченое на путь " + shaft.getElevatorCar().getSecondsSpentMoving() + " секунд");
+        System.out.println("время потраченое на старт " + shaft.getElevatorCar().getSecondsSpentStarting() + " секунд");
+        System.out.println("время потраченое на остановку " + shaft.getElevatorCar().getSecondsSpentStopping() + " секунд");
     }
 
     private void call() {
@@ -75,6 +66,7 @@ public class CommandLine {
                 }
             }
             shaft.doCalls(floorsNumbers);
+            System.out.println("готово");
         } else
             System.out.println("не корректный ввод");
 

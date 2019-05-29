@@ -13,7 +13,7 @@ import java.util.stream.IntStream;
 @Component
 public class Shaft {
     private Floor[] floors;
-    private ElevatorCar elevatorCar;
+    private volatile ElevatorCar elevatorCar;
 
     @Autowired
     public Shaft(@Value("#{new Integer('${floors}')}") int numberOfFloors, ElevatorCar elevatorCar) {
@@ -29,6 +29,7 @@ public class Shaft {
                 throw new IllegalArgumentException("gross number of floor");
         }
         Arrays.stream(floorsNumbers).forEach(n -> this.floors[n - 1].doCall());
+        elevatorCar.start();
     }
 
     public boolean hasCall() {
